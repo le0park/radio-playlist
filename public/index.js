@@ -1,41 +1,70 @@
-async function getTab() {
-    let queryOptions = { active: true, lastFocusedWindow: true };
-    // `tab` will either be a `tabs.Tab` instance or `undefined`.
-    let [tab] = await chrome.tabs.query(queryOptions);
-    return tab;
-}
+/**
+ * 
+ * State reducers for application.
+ * 
+ */
 
-// 노래를 저장할 playlist ID
-let playlistId = 'PLma835fHaaztKoG97FEpgMh_qp-bSuHmr';
-
+/**
+ * Store musics in local storage.
+ * @param {*} musics 
+ */
 function setMusics(musics) {
     chrome.storage.local.get('radio-playlist', old => {
         chrome.storage.local.set({'radio-playlist' : { ...old['radio-playlist'], musics }});
     });
 }
 
-function setFail(fail) {
+/**
+ * Store failed musics in local storage.
+ * @param {*} musics 
+ */
+function setFail(musics) {
     chrome.storage.local.get('radio-playlist', old => {
-        chrome.storage.local.set({'radio-playlist' : { ...old['radio-playlist'], fail }});
+        chrome.storage.local.set({'radio-playlist' : { ...old['radio-playlist'], fail: musics }});
     });
 }
 
-function setSuccess(success) {
+
+/**
+ * Store success musics in local storage.
+ * @param {*} musics 
+ */
+function setSuccess(musics) {
     chrome.storage.local.get('radio-playlist', old => {
-        chrome.storage.local.set({'radio-playlist' : { ...old['radio-playlist'], success }});
+        chrome.storage.local.set({'radio-playlist' : { ...old['radio-playlist'], success: musics }});
     });
 }
 
+/**
+ * Store youtube playlist ID in local storage.
+ * @param {string} playlistId 
+ */
 function setPlaylistId(playlistId) {
     chrome.storage.local.get('radio-playlist', old => {
         chrome.storage.local.set({'radio-playlist' : { ...old['radio-playlist'], playlistId }});
     });
 }
 
+/**
+ * Get local storage data.
+ * @param {function(): object} callback 
+ * @returns 
+ */
 function getLocalData(callback) {
     return chrome.storage.local.get('radio-playlist', callback);
 }
 
+/**
+ * 
+ * Application Logics.
+ * 
+*/
+
+/**
+ * Replace children of element to music li elements.
+ * @param {*} query query of target element
+ * @param {*} musics 
+ */
 function replaceMusicListItems(query, musics) {
     const listItems = 
         musics.map(({ title, artist }) => {
@@ -48,6 +77,9 @@ function replaceMusicListItems(query, musics) {
     document.querySelector(query).replaceChildren(...listItems)
 };
 
+/**
+ * Parse music table to musics.
+ */
 async function parseAndSetMusics() {
     const tab = await getTab();
 
@@ -58,14 +90,76 @@ async function parseAndSetMusics() {
     });
 }
 
+/**
+ * Trigger to search the musics and add to the playlist.
+ * @param {*} musics 
+ */
 async function musicsToPlaylist(musics) {
     const tab = await getTab();
 
-    // 노래를 검색한다. 
+    // request to search the musics on youtube.
     chrome.tabs.sendMessage(tab.id, { action: 'search_musics', params: { musics } });
 }
 
+/**
+ * Button event listeners
+ */
+document.querySelector('.music.btn-parse').addEventListener('click', parseAndSetMusics)
+getLocalData(({ 'radio-playlist': { musics }}) => {
+    document.querySelector('.playlist.btn-add').addEventListener('click', () => musicsToPlaylist(musics))
+}); 
 
+/**
+ * Input event listeners
+ */
+document.querySelector('#youtube_playlist_id').addEventListener('change', ({ target: { value }}) => {
+    setPlaylistId(value);
+});
+
+/**
+ * Initialize an application.
+ */
+getLocalData((obj) => {
+    const { musics, success, fail, playlistId } = obj['radio-playlist'];
+
+    // initialize list items
+    replaceMusicListItems('.music.result', musics);
+    replaceMusicListItems('.playlist.result-success', success);
+    replaceMusicListItems('.playlist.result-fail', fail);
+
+    // initialize playlist id
+    document.querySelector('#youtube_playlist_id').setAttribute('value', playlistId);
+})
+
+
+/**
+ * Get current tab from chrome
+ * @returns tab
+ */
+async function getTab() {
+    let queryOptions = { active: true, lastFocusedWindow: true };
+    // `tab` will either be a `tabs.Tab` instance or `undefined`.
+    let [tab] = await chrome.tabs.query(queryOptions);
+    return tab;
+}
+
+/**
+ * inject content scripts to the tab.
+ */
+getTab().then(({id}) => {
+    chrome.scripting.executeScript({
+        target: { 
+            tabId: id,
+        },
+        files: ['app.bundle.js'] 
+    });
+});
+
+
+/**
+ * Chrome Message handlers.
+ * - Dealing the results of searching or adding requests.
+ */
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     if (msg.action === 'search_result') {
         /**
@@ -115,42 +209,4 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
          */
         alert(msg.params.status);
     }
-});
-
-/**
- * button event listeners
- */
-document.querySelector('.music.btn-parse').addEventListener('click', parseAndSetMusics)
-getLocalData(({ 'radio-playlist': { musics }}) => {
-    document.querySelector('.playlist.btn-add').addEventListener('click', () => musicsToPlaylist(musics))
-}); 
-
-/**
- * select option event listeners
- */
-document.querySelector('#youtube_playlist_id').addEventListener('change', ({ target: { value }}) => {
-    setPlaylistId(value);
-});
-
-/**
- * initialize UI
- */
-getLocalData((obj) => {
-    const { musics, success, fail, playlistId } = obj['radio-playlist'];
-    replaceMusicListItems('.music.result', musics);
-    replaceMusicListItems('.playlist.result-success', success);
-    replaceMusicListItems('.playlist.result-fail', fail);
-})
-
-
-/**
- * inject content scripts to the tab.
- */
-getTab().then(({id}) => {
-    chrome.scripting.executeScript({
-        target: { 
-            tabId: id,
-        },
-        files: ['app.bundle.js'] 
-    });
 });

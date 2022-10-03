@@ -1,11 +1,15 @@
-import { parsePlaylist } from "./parse";
+import { parseMusicTable } from "./parse";
 import { search, addToPlaylist, getPlaylist, getPlaylists} from "./ytmusic";
 
+/**
+ * Message handlers for chrome tab.
+ * - Deal with requests to youtube or something because of CORS issues.
+ */
 chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
     // If the received message has the expected format...
     if (msg.action === 'get_musics') {
         const table = document.querySelector('#songlist_frame').contentDocument.querySelector('#musicView > table > tbody')
-        sendResponse(parsePlaylist(table));
+        sendResponse(parseMusicTable(table));
     } else if (msg.action === 'search_musics') {
         const {musics} = msg.params;
         search(musics).then(values => 
