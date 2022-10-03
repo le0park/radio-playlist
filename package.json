@@ -13,6 +13,7 @@
     "ytmusic": "../ytmusic-api"
   },
   "devDependencies": {
+    "copy-webpack-plugin": "^11.0.0",
     "html-webpack-plugin": "^5.5.0",
     "terser-webpack-plugin": "^5.3.6",
     "webpack": "^5.74.0",
