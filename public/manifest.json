@@ -1,0 +1,20 @@
+{
+    "name": "Radio Playlist",
+    "version": "0.0.1",
+    "description": "Add radio playlist to youtube playlist.",
+    "manifest_version": 3,
+    "author": "Junyoung Park",
+    "permissions": [
+        "tabs",
+        "scripting",
+        "storage"
+    ],
+    "host_permissions": [
+      "https://www.imbc.com/broad/radio/",
+      "https://music.youtube.com/"
+    ],
+    "action":{
+        "default_popup": "index.html",
+        "default_title": "Radio Playlist"
+    }
+}
