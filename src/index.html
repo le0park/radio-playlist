@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -8,19 +7,43 @@
     <!-- JavaScript Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8" crossorigin="anonymous"></script>
 </head>
-<body>
-    <h2>radio playlist</h2>
+<body style="width: 40rem">
+    <div class="container-md mb-4">
+        <h2>Radio Musics To Youtube Music</h2>
 
-    <div style="width: 40rem;">
-        <button class="music btn-parse">parse</button>
-        <h3>result</h3>
-        <div class="music result"></div>
+        <h4>Read Musics</h4>
+        <button type="button" class="btn btn-primary music btn-parse mb-3">Parse</button>
 
-        <button class="playlist btn-add">add playlist</button>
-        <h3>success list</h3>
-        <div class="playlist result-success"></div>
-        <h3>fail list</h3>
-        <div class="playlist result-fail"></div>
+        <h4>Musics</h4>
+        <ul class="list-group music result mb-4"></ul>
+
+        <h4>Add Musics to Playlist</h4>
+        <div class="mb-3">
+            <label for="exampleFormControlInput1" class="form-label">Youtube Playlist ID</label>
+            <input type="text" class="form-control" id="youtube_playlist_id">
+        </div>
+
+        <button type="button" class="btn btn-primary playlist btn-add mb-3">Add to playlist</button>
+
+        <h3>Success List</h3>
+        <ul class="list-group playlist result-success"></ul>
+        <h3>Failure List</h3>
+        <ul class="list-group playlist result-fail"></ul>
+    </div>
+    <div class="container-md">
+        <h2>How to use</h2>
+        <h4>Get Music Data From Music Table</h4>
+        <p>Open <a href="https://www.imbc.com/broad/radio/index.html" target="_blank">MBC Radio website</a>, and enter a music table post that you want to add. </p>
+        <p>Then, press below <u>Parse</u> button to get music table data. </p>
+        
+        <h4>Add Musics to Youtube Playlist</h4>
+        <p>If you want to add the musics to your playlist, you have to input your playlist ID.</p>
+        <p>You can find your playlist ID in URL of your playlist, it's right after <code>list=</code></p>
+        <p>For example, if your playlist url is <code>https://www.youtube.com/playlist?list=PLma835fHabcdefg1RrWN3donthackmezmntM</code>, <code>PLma835fHabcdefg1RrWN3donthackmezmntM</code> is your playlist ID.</p>
+        <p>You have to put your playlist ID on below input.</p>
+        <p>Then, press below <u>Add to playlist</u> button to get music table data. </p>
+        <p>You can see the below list, that has the musics that add successfully or unsuccessfully. </p>
+
         <script src="index.js"></script>
     </div>
 </body>

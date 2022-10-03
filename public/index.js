@@ -30,12 +30,25 @@ function getLocalData(callback) {
     return chrome.storage.local.get('radio-playlist', callback);
 }
 
+function replaceMusicListItems(query, musics) {
+    const listItems = 
+        musics.map(({ title, artist }) => {
+            let element = document.createElement('li');
+            element.setAttribute('class', 'list-group-item');
+            element.innerText = `${artist} - ${title}`;
+            return element;
+        });
+
+    document.querySelector(query).replaceChildren(...listItems)
+};
+
 async function parseAndSetMusics() {
     const tab = await getTab();
 
     chrome.tabs.sendMessage(tab.id, { action: 'get_musics' }, (musics) => {
         setMusics(musics)
-        document.querySelector('.music.result').innerText = JSON.stringify(musics, null, 2);
+
+        replaceMusicListItems('.music.result', musics);
     });
 }
 
@@ -46,30 +59,31 @@ async function musicsToPlaylist(musics) {
     chrome.tabs.sendMessage(tab.id, { action: 'search_musics', params: { musics } });
 }
 
+
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     if (msg.action === 'search_result') {
         const { values, musics } = msg.params;
         const results = values.map((result, index) => ({ ...result, target: musics[index] }))
 
-        // 노래 정보가 있으면 playlist 에 추가한다.
-        const success = results.filter(result => result.status === 'fulfilled' && result.value);
+        // if ytmusic has music info, add musics to the playlist.
+        const success = results.filter(result => result.status === 'fulfilled' && result.value).map(({ target, value }) => ({...target, id: value}));
         setSuccess(success)
-        console.log(`>> show success: ${JSON.stringify(success.map(result => result.value))}`);
+        console.log(`>> show success: ${JSON.stringify(success)}`);
 
-        // 노래 정보가 없으면 실패 목록에 추가한다. 
-        const fail = results.filter(result => result.status === 'rejected' || !result.value);
+        // if ytmusic does not have music info, add musics to failure list.
+        const fail = results.filter(result => result.status === 'rejected' || !result.value).map(({ target }) => target);
         setFail(fail)
-        console.log(`>> show failed: ${JSON.stringify(fail.map(result => result.target))}`)
+        console.log(`>> show failed: ${JSON.stringify(fail)}`)
         
         getLocalData(({ 'radio-playlist': { success, fail }}) => {
-            document.querySelector('.playlist.result-success').innerText = JSON.stringify(success.map(({ target }) => target), null, 2);
-            document.querySelector('.playlist.result-fail').innerText = JSON.stringify(fail, null, 2);
+            replaceMusicListItems('.playlist.result-success', success);
+            replaceMusicListItems('.playlist.result-fail', fail);
         })
 
         getTab().then(tab => {
             chrome.tabs.sendMessage(
                 tab.id, 
-                { action: 'add_musics_playlist', params: { musicIds: success.map(({ value }) => value), playlistId } },
+                { action: 'add_musics_playlist', params: { musicIds: success.map(({ id }) => id), playlistId } },
             );
         })
     } else if (msg.action === 'add_musics_playlist_result') {
@@ -77,6 +91,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     }
 });
 
+/**
+ * button event listeners
+ */
 document.querySelector('.music.btn-parse').addEventListener('click', parseAndSetMusics)
 getLocalData(({ 'radio-playlist': { musics }}) => {
     document.querySelector('.playlist.btn-add').addEventListener('click', () => musicsToPlaylist(musics))
@@ -84,9 +101,9 @@ getLocalData(({ 'radio-playlist': { musics }}) => {
 
 getLocalData((obj) => {
     const { musics, success, fail } = obj['radio-playlist'];
-    document.querySelector('.music.result').innerText = JSON.stringify(musics);
-    document.querySelector('.playlist.result-success').innerText = JSON.stringify(success);
-    document.querySelector('.playlist.result-fail').innerText = JSON.stringify(fail);
+    replaceMusicListItems('.music.result', musics);
+    replaceMusicListItems('.playlist.result-success', success);
+    replaceMusicListItems('.playlist.result-fail', fail);
 })
 
 getTab().then(({id}) => {
