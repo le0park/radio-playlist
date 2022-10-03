@@ -62,7 +62,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         alert(`>> show failed: ${JSON.stringify(fail.map(result => result.target))}`)
         
         getLocalData(({ 'radio-playlist': { success, fail }}) => {
-            document.querySelector('.playlist.result-success').innerText = JSON.stringify(success, null, 2);
+            document.querySelector('.playlist.result-success').innerText = JSON.stringify(success.map(({ target }) => target), null, 2);
             document.querySelector('.playlist.result-fail').innerText = JSON.stringify(fail, null, 2);
         })
 
