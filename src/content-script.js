@@ -1,5 +1,5 @@
 import { parsePlaylist } from "./parse";
-import { search, addToPlaylist, getPlaylist} from "./ytmusic";
+import { search, addToPlaylist, getPlaylist, getPlaylists} from "./ytmusic";
 
 chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
     // If the received message has the expected format...
@@ -10,6 +10,9 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
         const {musics} = msg.params;
         search(musics).then(values => 
             chrome.runtime.sendMessage('alaidjagmphdjliibkabmpcdflmagglj', { action: 'search_result', params: {values, musics} }));
+    } else if (msg.action === 'get_playlists') {
+        getPlaylists().then(values => 
+            chrome.runtime.sendMessage('alaidjagmphdjliibkabmpcdflmagglj', { action: 'get_playlists_result', params: {values} }));
     } else if (msg.action === 'add_musics_playlist') {
         const {musicIds, playlistId} = msg.params;
 

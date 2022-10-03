@@ -25,3 +25,9 @@ export function getPlaylist(playlistId) {
     
     return API.getPlaylist(playlistId);
 }
+
+export function getPlaylists() {
+    console.log(`>> get playlists`);
+    
+    return API.getPlaylists();
+}
