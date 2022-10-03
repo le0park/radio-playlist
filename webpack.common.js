@@ -4,13 +4,13 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   entry: {
-    app: './src/index.js',
+    app: './src/content-script.js',
   },
   plugins: [
     new HtmlWebpackPlugin({
       title: 'Production',
       template: path.join(__dirname, './src/index.html'),
-      inject: true
+      inject: false,
     }),
     new CopyWebpackPlugin({
       patterns: [
