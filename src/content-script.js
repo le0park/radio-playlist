@@ -19,7 +19,13 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
                 const existIds = content.map(({ id }) => id);
                 console.log(JSON.stringify(existIds));
                 targetIds = targetIds.filter(id => !(id in existIds))
-                addToPlaylist(targetIds, playlistId).then(({status}) => console.log(status));
+                addToPlaylist(targetIds, playlistId)
+                    .then(({status}) => {
+                        chrome.runtime.sendMessage(
+                            'alaidjagmphdjliibkabmpcdflmagglj', 
+                            { action: 'add_musics_playlist_result', params: { status } }
+                        );
+                    });
             })
     }
 });

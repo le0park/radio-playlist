@@ -72,8 +72,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
                 { action: 'add_musics_playlist', params: { musicIds: success.map(({ value }) => value), playlistId } },
             );
         })
-    } else if (msg.action === 'add_playlist_result') {
-        // TODO
+    } else if (msg.action === 'add_musics_playlist_result') {
+        alert(msg.params.status);
     }
 });
 
