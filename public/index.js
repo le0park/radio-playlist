@@ -26,6 +26,12 @@ function setSuccess(success) {
     });
 }
 
+function setPlaylistId(playlistId) {
+    chrome.storage.local.get('radio-playlist', old => {
+        chrome.storage.local.set({'radio-playlist' : { ...old['radio-playlist'], playlistId }});
+    });
+}
+
 function getLocalData(callback) {
     return chrome.storage.local.get('radio-playlist', callback);
 }
@@ -62,6 +68,10 @@ async function musicsToPlaylist(musics) {
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     if (msg.action === 'search_result') {
+        /**
+         * handle youtube music search result. 
+         * - try to add music ids to playlist.
+         */
         const { values, musics } = msg.params;
         const results = values.map((result, index) => ({ ...result, target: musics[index] }))
 
@@ -86,7 +96,23 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
                 { action: 'add_musics_playlist', params: { musicIds: success.map(({ id }) => id), playlistId } },
             );
         })
+    } else if (msg.action === 'get_playlists_result') {
+        /**
+         * handle playlists result.
+         * - add playlist ID options to select form.
+         */
+        document.querySelector('#youtube_playlist_id').replaceChildren(
+            ...msg.params.values.map(({ playlistId }) => {
+                const element = document.createElement('option');
+                element.setAttribute('value', playlistId);
+                return element;
+            })
+        )
     } else if (msg.action === 'add_musics_playlist_result') {
+        /**
+         * handle after add musics to playlist.
+         * - alert status to user.
+         */
         alert(msg.params.status);
     }
 });
@@ -99,13 +125,27 @@ getLocalData(({ 'radio-playlist': { musics }}) => {
     document.querySelector('.playlist.btn-add').addEventListener('click', () => musicsToPlaylist(musics))
 }); 
 
+/**
+ * select option event listeners
+ */
+document.querySelector('#youtube_playlist_id').addEventListener('change', ({ target: { value }}) => {
+    setPlaylistId(value);
+});
+
+/**
+ * initialize UI
+ */
 getLocalData((obj) => {
-    const { musics, success, fail } = obj['radio-playlist'];
+    const { musics, success, fail, playlistId } = obj['radio-playlist'];
     replaceMusicListItems('.music.result', musics);
     replaceMusicListItems('.playlist.result-success', success);
     replaceMusicListItems('.playlist.result-fail', fail);
 })
 
+
+/**
+ * inject content scripts to the tab.
+ */
 getTab().then(({id}) => {
     chrome.scripting.executeScript({
         target: { 
