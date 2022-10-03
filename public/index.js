@@ -54,12 +54,12 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         // 노래 정보가 있으면 playlist 에 추가한다.
         const success = results.filter(result => result.status === 'fulfilled' && result.value);
         setSuccess(success)
-        alert(`>> show success: ${JSON.stringify(success.map(result => result.value))}`);
+        console.log(`>> show success: ${JSON.stringify(success.map(result => result.value))}`);
 
         // 노래 정보가 없으면 실패 목록에 추가한다. 
         const fail = results.filter(result => result.status === 'rejected' || !result.value);
         setFail(fail)
-        alert(`>> show failed: ${JSON.stringify(fail.map(result => result.target))}`)
+        console.log(`>> show failed: ${JSON.stringify(fail.map(result => result.target))}`)
         
         getLocalData(({ 'radio-playlist': { success, fail }}) => {
             document.querySelector('.playlist.result-success').innerText = JSON.stringify(success.map(({ target }) => target), null, 2);
@@ -76,11 +76,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         // TODO
     }
 });
-
-
-
-
-
 
 document.querySelector('.music.btn-parse').addEventListener('click', parseAndSetMusics)
 getLocalData(({ 'radio-playlist': { musics }}) => {
